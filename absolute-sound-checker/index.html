@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <title>絶対音感チェッカー</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1>絶対音感チェッカー</h1>
+      <div class="flex-container">
+        <input type="radio" name="example" value="サンプル" onclick="makeList('jp')" />日本語表記
+        <input
+          type="radio"
+          name="example"
+          value="サンプル"
+          checked
+          onclick="makeList('en')"
+        />英語表記
+      </div>
+
+      <label>答え</label>
+      <select name="audio" id="selector" required>
+        <option value="-1" hidden>Choose</option>
+      </select>
+      <input type="button" class="btn btn--orange" value="音を再生" onclick="play()" />
+      <input type="button" class="btn btn--orange" value="答えを送信" onclick="submit()" />
+      <input type="button" class="btn btn--orange" value="音を変更" onclick="randInit()" />
+    </div>
+
+    <noscript>JavaScriptを有効にしてください</noscript>
+  </body>
+  <script>
+    // https://developer.mozilla.org/ja/docs/Web/API/OscillatorNode
+    let Scale = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
+    let frequency = [220, 233, 246, 261, 277, 293, 311, 329, 349, 369, 391, 415];
+    let rand = Math.floor(Math.random() * Scale.length);
+    let played = false;
+
+    const play = () => {
+      played = true;
+      let ctx = new AudioContext();
+
+      let osc = ctx.createOscillator();
+
+      osc.frequency.value = frequency[rand];
+      console.log(frequency[rand]);
+      osc.type = "sine";
+      osc.connect(ctx.destination);
+      osc.start(0);
+      osc.stop(3);
+    };
+
+    const submit = () => {
+      if (!played) {
+        alert("音を再生してください");
+        return;
+      }
+      let answer = document.querySelector("#selector").value;
+
+      if (answer == -1) {
+        alert("答えを選択してください");
+        return;
+      }
+
+      if (answer == rand) {
+        alert("正解");
+      } else {
+        alert("不正解");
+      }
+    };
+
+    const randInit = () => {
+      const prevrand = rand;
+
+      while (prevrand == rand) {
+        rand = Math.floor(Math.random() * Scale.length);
+      }
+      played = false;
+      alert("音を変更しました");
+    };
+
+    const deleteChild = () => {
+      let child = document.querySelector("#selector");
+      while (child.firstChild) {
+        child.removeChild(child.firstChild);
+      }
+    };
+
+    const makeList = (lang) => {
+      deleteChild();
+      console.log("osareta");
+      if (lang == "jp") {
+        Scale = ["ラ", "ラ#", "シ", "ド", "ド#", "レ", "レ#", "ミ", "ファ", "ファ#", "ソ", "ソ#"];
+      } else {
+        Scale = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
+      }
+
+      let selector = document.querySelector("#selector");
+
+      for (let i = 0; i < Scale.length; i++) {
+        let option = document.createElement("option");
+        option.value = i;
+        option.innerHTML = Scale[i];
+        selector.appendChild(option);
+      }
+    };
+
+    makeList("en");
+  </script>
+</html>
